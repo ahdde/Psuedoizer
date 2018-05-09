@@ -61,14 +61,7 @@ namespace Pseudo.Globalization
             }
         }
 
-        private static readonly CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures)
-            .Concat(new[]
-            {
-                new CultureInfo("qps-ploc"),
-                new CultureInfo("qps-plocm"),
-                new CultureInfo("qps-ploca"),
-            })
-            .ToArray();
+        private static readonly CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
         private static void TranslateMultipleFiles(string directory, string langCode, bool includeBlankResources)
         {
             foreach (var file in Directory.GetFiles(directory, "*.resx"))
@@ -76,7 +69,7 @@ namespace Pseudo.Globalization
                 // Check if it's the neutral resource file
                 var fileName = Path.GetFileNameWithoutExtension(file);
                 var extension = Path.GetExtension(fileName).Trim(' ', '.').ToLower();
-                if (string.IsNullOrEmpty(extension) || !allCultures.Any(c => c.Name.ToLower() == extension || c.TwoLetterISOLanguageName.ToLower() == extension))
+                if (string.IsNullOrEmpty(extension) || (!extension.Equals(langCode, StringComparison.OrdinalIgnoreCase) && allCultures.All(c => c.Name.ToLower() != extension && c.TwoLetterISOLanguageName.ToLower() != extension)))
                 {
                     TranslateSingleFile(file, string.Format("{0}\\{1}.{2}.resx", directory, fileName, langCode), includeBlankResources);
                 }
