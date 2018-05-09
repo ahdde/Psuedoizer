@@ -1,0 +1,33 @@
+﻿<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PseudoLanguage Condition=" '$(PseudoLanguage)' == '' ">qps-ploc</PseudoLanguage>
+    <AssignTargetPathsDependsOn>$(AssignTargetPathsDependsOn);AddPlocLanguages</AssignTargetPathsDependsOn>
+  </PropertyGroup>
+  <UsingTask TaskName="AddValidCultureNames" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+    <ParameterGroup>
+      <Language ParameterType="System.String" Required="true" />
+    </ParameterGroup>
+    <Task>
+      <Reference Include="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll"/>  
+      <Using Namespace="System"/>
+      <Using Namespace="System.Collections.Generic"/>
+      <Using Namespace="System.Reflection"/>
+      <Code Type="Fragment" Language="cs">
+        <![CDATA[
+            var assembly = typeof(Microsoft.Build.Tasks.AspNetCompiler).Assembly;
+            var type = assembly.GetType("Microsoft.Build.Tasks.CultureInfoCache");
+            var field = type.GetField("ValidCultureNames", BindingFlags.NonPublic | BindingFlags.Static);
+            var validCultureNames = (HashSet<string>) field.GetValue(type);
+            validCultureNames.Add(Language);
+        ]]>
+      </Code>
+    </Task>
+  </UsingTask>
+  <Target Name="AddPlocLanguages">
+    <AddValidCultureNames Language="$(PseudoLanguage)" />
+    <Exec Command="$(MSBuildThisFileDirectory)\..\tools\PsuedoizerConsole.exe $(ProjectDir) $(PseudoLanguage)"/>
+	<ItemGroup>
+		<EmbeddedResource Include="**\*.$(PseudoLanguage).resx" KeepDuplicates="false"/>
+	</ItemGroup>
+  </Target>
+</Project>

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<package >
+  <metadata minClientVersion="2.5">
+    <id>Psuedoizer</id>
+    <title>Psuedoizer</title>
+    <version>0.0.1</version>
+    <authors>Scott Hanselman and John Robbins</authors>
+    <projectUrl>https://github.com/shanselman/Psuedoizer</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Psuedointernationalization Utility (Scott Hanselman's Pseudoizer)</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright (c) 2011 Scott Hanselman and John Robbins</copyright>
+    <tags>pseudolocalization qps-ploc</tags>
+  </metadata>
+  <files>
+    <file src="build\Pseudolocalize.targets" target="build"/>
+	<file src="bin\Release\PsuedoizerConsole.exe" target="tools"/>
+  </files>
+</package>
