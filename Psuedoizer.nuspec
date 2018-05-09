@@ -13,7 +13,7 @@
     <tags>pseudolocalization qps-ploc</tags>
   </metadata>
   <files>
-    <file src="build\Pseudolocalize.targets" target="build"/>
+    <file src="build\Psuedoizer.targets" target="build"/>
 	<file src="bin\Release\PsuedoizerConsole.exe" target="tools"/>
   </files>
 </package>
