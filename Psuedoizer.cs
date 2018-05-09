@@ -61,7 +61,14 @@ namespace Pseudo.Globalization
             }
         }
 
-        private static readonly CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.SpecificCultures);
+        private static readonly CultureInfo[] allCultures = CultureInfo.GetCultures(CultureTypes.AllCultures)
+            .Concat(new[]
+            {
+                new CultureInfo("qps-ploc"),
+                new CultureInfo("qps-plocm"),
+                new CultureInfo("qps-ploca"),
+            })
+            .ToArray();
         private static void TranslateMultipleFiles(string directory, string langCode, bool includeBlankResources)
         {
             foreach (var file in Directory.GetFiles(directory, "*.resx"))
