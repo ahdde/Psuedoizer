@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package >
   <metadata minClientVersion="2.5">
-    <id>Psuedoizer</id>
-    <title>Psuedoizer</title>
+    <id>Pseudoizer</id>
+    <title>Pseudoizer</title>
     <version>0.0.1</version>
     <authors>Scott Hanselman and John Robbins</authors>
     <projectUrl>https://github.com/shanselman/Psuedoizer</projectUrl>
@@ -13,7 +13,7 @@
     <tags>pseudolocalization qps-ploc</tags>
   </metadata>
   <files>
-    <file src="build\Psuedoizer.targets" target="build"/>
+    <file src="build\Pseudoizer.targets" target="build"/>
 	<file src="bin\Release\PsuedoizerConsole.exe" target="tools"/>
   </files>
 </package>
