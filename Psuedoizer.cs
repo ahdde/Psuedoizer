@@ -76,20 +76,22 @@ namespace Pseudo.Globalization
             }
 
             foreach (var subDir in Directory.GetDirectories(directory))
-            {
                 TranslateMultipleFiles(subDir, langCode, includeBlankResources);
-            }
         }
 
         private static void TranslateSingleFile(string fileName, string fileSaveName, bool includeBlankResources)
         {
+            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (fileSaveName == null) throw new ArgumentNullException(nameof(fileSaveName));
+
+            if (!ResourceFileNeedsTranslation(fileName, fileSaveName))
+                return;
+
             // Open the input file.
-            ResXResourceReader reader = new ResXResourceReader(fileName);
+            var reader = new ResXResourceReader(fileName);
             try
             {
-                // Get the enumerator.  If this throws an ArguementException
-                // it means the file is not a .RESX file.
-                IDictionaryEnumerator enumerator = reader.GetEnumerator();
+                var enumerator = reader.GetEnumerator();
             }
             catch (ArgumentException ex)
             {
@@ -99,70 +101,98 @@ namespace Pseudo.Globalization
             }
 
             // Allocate the list for this instance.
-            SortedList textResourcesList = new SortedList();
+            var textResourcesList = new SortedList();
 
             // Run through the file looking for only true text related
             // properties and only those with values set.
             foreach (DictionaryEntry dic in reader)
             {
                 // Only consider this entry if the value is something.
-                if (null != dic.Value)
+                if (null == dic.Value) continue;
+                // Is this a System.String.
+                if ("System.String" != dic.Value.GetType().ToString()) continue;
+
+                var keyString = dic.Key.ToString();
+
+                // Make sure the key name does not start with the
+                // "$" or ">>" meta characters and is not an empty
+                // string (or we're explicitly including empty strings).
+                if ((false == keyString.StartsWith(">>")) &&
+                    (false == keyString.StartsWith("$")) &&
+                    (includeBlankResources || "" != dic.Value.ToString()))
                 {
-                    // Is this a System.String.
-                    if ("System.String" == dic.Value.GetType().ToString())
-                    {
-                        String KeyString = dic.Key.ToString();
-
-                        // Make sure the key name does not start with the
-                        // "$" or ">>" meta characters and is not an empty
-                        // string (or we're explicitly including empty strings).
-                        if ((false == KeyString.StartsWith(">>")) &&
-                            (false == KeyString.StartsWith("$")) &&
-                            (includeBlankResources || "" != dic.Value.ToString()))
-                        {
-                            // We've got a winner.
-                            textResourcesList.Add(dic.Key, dic.Value);
-                        }
-
-                        // Special case the Windows Form "$this.Text" or
-                        // I don't get the form titles.
-                        if (0 == String.Compare(KeyString, "$this.Text"))
-                        {
-                            textResourcesList.Add(dic.Key, dic.Value);
-                        }
-
-                    }
+                    // We've got a winner.
+                    textResourcesList.Add(dic.Key, dic.Value);
                 }
+
+                // Special case the Windows Form "$this.Text" or
+                // I don't get the form titles.
+                if (0 == String.CompareOrdinal(keyString, "$this.Text"))
+                    textResourcesList.Add(dic.Key, dic.Value);
             }
 
             // It's entirely possible that there are no text strings in the
             // .ResX file.
-            if (textResourcesList.Count > 0)
-            {
-                if (null != fileSaveName)
-                {
-                    if (File.Exists(fileSaveName))
-                        File.Delete(fileSaveName);
-
-                    // Create the new file.
-                    ResXResourceWriter writer =
-                        new ResXResourceWriter(fileSaveName);
-
-                    foreach (DictionaryEntry textdic in textResourcesList)
-                    {
-                        writer.AddResource(textdic.Key.ToString(), Psuedoizer.ConvertToFakeInternationalized(textdic.Value.ToString()));
-                    }
-
-                    writer.Generate();
-                    writer.Close();
-                    Console.WriteLine(String.Format("{0}: converted {1} text resource(s).", fileName, textResourcesList.Count));
-                }
-            }
-            else
+            if (textResourcesList.Count == 0)
             {
                 Console.WriteLine("WARNING: No text resources found in " + fileName);
+                return;
             }
+
+            if (File.Exists(fileSaveName))
+            {
+                if( IsFileLocked(fileSaveName))
+                    System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
+                if(IsFileLocked(fileSaveName))
+                    throw new Exception($"File {fileSaveName} is locked.");
+                File.Delete(fileSaveName);
+            }
+
+            // Create the new file.
+            var writer = new ResXResourceWriter(fileSaveName);
+
+            foreach (DictionaryEntry textdic in textResourcesList)
+                writer.AddResource(textdic.Key.ToString(), Psuedoizer.ConvertToFakeInternationalized(textdic.Value.ToString()));
+
+            writer.Generate();
+            writer.Close();
+            Console.WriteLine($"{fileName}: converted {textResourcesList.Count} text resource(s).");
         }
+
+        private static bool ResourceFileNeedsTranslation(string fileName, string fileSaveName)
+        {
+            if (!File.Exists(fileSaveName))
+                return true;
+
+            if (System.IO.File.GetLastWriteTime(fileSaveName) > System.IO.File.GetLastWriteTime(fileName))
+            {
+                Console.WriteLine($"Skipped {fileName}");
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsFileLocked(string file)
+        {
+            FileStream stream = null;
+            try
+            {
+                stream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.None);
+            }
+            catch (IOException)
+            {
+                Console.WriteLine($"file is locked: {file}");
+                return true;
+            }
+            finally
+            {
+                stream?.Close();
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Converts a string to a pseudo internationized string.
         /// </summary>
