@@ -91,7 +91,10 @@ namespace Pseudo.Globalization
                 return;
 
             // Open the input file.
-            ResXResourceReader reader = new ResXResourceReader(fileName);
+            ResXResourceReader reader = new ResXResourceReader(fileName)
+            {
+                BasePath = Path.GetDirectoryName(fileName)
+            };
             try
             {
                 // Get the enumerator.  If this throws an ArguementException
@@ -208,7 +211,11 @@ namespace Pseudo.Globalization
         /// </returns>
         public static String ConvertToFakeInternationalized(String inputString)
         {
-
+            //check if the input string is xml or html... if it is, do not localize
+            if (inputString.TrimStart().StartsWith("<"))
+            {
+                return inputString;
+            }
             //check if the input string is a http or https link... if it is, do not localize
             if (inputString.Contains("http://") || inputString.Contains("https://"))
             {
