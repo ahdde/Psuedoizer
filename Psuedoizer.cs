@@ -84,7 +84,10 @@ namespace Pseudo.Globalization
         private static void TranslateSingleFile(string fileName, string fileSaveName, bool includeBlankResources)
         {
             // Open the input file.
-            ResXResourceReader reader = new ResXResourceReader(fileName);
+            ResXResourceReader reader = new ResXResourceReader(fileName)
+            {
+                BasePath = Path.GetDirectoryName(fileName)
+            };
             try
             {
                 // Get the enumerator.  If this throws an ArguementException
