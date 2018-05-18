@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Text;
 using System.Globalization;
+using System.Threading;
 
 namespace Pseudo.Globalization
 {
@@ -149,11 +150,12 @@ namespace Pseudo.Globalization
                 {
                     if (File.Exists(fileSaveName))
                     {
-                        if( IsFileLocked(fileSaveName))
-                            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(2));
-                        if(IsFileLocked(fileSaveName))
-                            throw new Exception($"File {fileSaveName} is locked.");
-                        File.Delete(fileSaveName);
+                        if( !TryDeleteFile(fileSaveName))
+                        {
+                            Thread.Sleep(TimeSpan.FromSeconds(2));
+                            if(!TryDeleteFile(fileSaveName))
+                                throw new Exception($"File {fileSaveName} is still locked.");
+                        }
                     }
 
                     // Create the new file.
@@ -188,24 +190,19 @@ namespace Pseudo.Globalization
             return false;
         }
 
-        private static bool IsFileLocked(string file)
+        private static bool TryDeleteFile(string file)
         {
-            FileStream stream = null;
             try
             {
-                stream = File.Open(file, FileMode.Open, FileAccess.Read, FileShare.None);
+                File.Delete(file);
             }
             catch (IOException)
             {
                 Console.WriteLine($"file is locked: {file}");
-                return true;
-            }
-            finally
-            {
-                stream?.Close();
+                return false;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
