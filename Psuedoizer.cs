@@ -5,6 +5,7 @@ using System.IO;
 using System.Collections;
 using System.Text;
 using System.Globalization;
+using System.Threading;
 
 namespace Pseudo.Globalization
 {
@@ -83,6 +84,12 @@ namespace Pseudo.Globalization
 
         private static void TranslateSingleFile(string fileName, string fileSaveName, bool includeBlankResources)
         {
+            if (fileName == null) throw new ArgumentNullException(nameof(fileName));
+            if (fileSaveName == null) throw new ArgumentNullException(nameof(fileSaveName));
+
+            if (!ResourceFileNeedsTranslation(fileName, fileSaveName))
+                return;
+
             // Open the input file.
             ResXResourceReader reader = new ResXResourceReader(fileName);
             try
@@ -142,7 +149,17 @@ namespace Pseudo.Globalization
                 if (null != fileSaveName)
                 {
                     if (File.Exists(fileSaveName))
-                        File.Delete(fileSaveName);
+                    {
+                        try
+                        {
+                            File.Delete(fileSaveName);
+                        }
+                        catch (IOException)
+                        {
+                            Thread.Sleep(TimeSpan.FromSeconds(2));
+                            File.Delete(fileSaveName);
+                        }
+                    }
 
                     // Create the new file.
                     ResXResourceWriter writer =
@@ -163,6 +180,19 @@ namespace Pseudo.Globalization
                 Console.WriteLine("WARNING: No text resources found in " + fileName);
             }
         }
+
+        private static bool ResourceFileNeedsTranslation(string fileName, string fileSaveName)
+        {
+            if (!File.Exists(fileSaveName))
+                return true;
+
+            if (System.IO.File.GetLastWriteTime(fileSaveName) <= System.IO.File.GetLastWriteTime(fileName)) 
+                return true;
+
+            Console.WriteLine($"Skipped {fileName}");
+            return false;
+        }
+
         /// <summary>
         /// Converts a string to a pseudo internationized string.
         /// </summary>
