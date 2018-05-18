@@ -150,11 +150,14 @@ namespace Pseudo.Globalization
                 {
                     if (File.Exists(fileSaveName))
                     {
-                        if( !TryDeleteFile(fileSaveName))
+                        try
+                        {
+                            File.Delete(fileSaveName);
+                        }
+                        catch (IOException)
                         {
                             Thread.Sleep(TimeSpan.FromSeconds(2));
-                            if(!TryDeleteFile(fileSaveName))
-                                throw new Exception($"File {fileSaveName} is still locked.");
+                            File.Delete(fileSaveName);
                         }
                     }
 
@@ -188,21 +191,6 @@ namespace Pseudo.Globalization
 
             Console.WriteLine($"Skipped {fileName}");
             return false;
-        }
-
-        private static bool TryDeleteFile(string file)
-        {
-            try
-            {
-                File.Delete(file);
-            }
-            catch (IOException)
-            {
-                Console.WriteLine($"file is locked: {file}");
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>
