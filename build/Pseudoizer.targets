@@ -14,7 +14,7 @@
       <Using Namespace="System.Reflection"/>
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-            var assembly = typeof(Microsoft.Build.Tasks.AspNetCompiler).Assembly;
+            var assembly = typeof(Microsoft.Build.Tasks.CreateItem).Assembly;
             var type = assembly.GetType("Microsoft.Build.Tasks.CultureInfoCache");
             var field = type.GetField("ValidCultureNames", BindingFlags.NonPublic | BindingFlags.Static);
             var validCultureNames = (HashSet<string>) field.GetValue(type);
