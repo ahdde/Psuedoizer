@@ -3,7 +3,7 @@
     <PseudoLanguage Condition=" '$(PseudoLanguage)' == '' ">qps-ploc</PseudoLanguage>
     <AssignTargetPathsDependsOn>$(AssignTargetPathsDependsOn);AddPlocLanguages</AssignTargetPathsDependsOn>
   </PropertyGroup>
-  <UsingTask TaskName="AddValidCultureNames" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+  <UsingTask TaskName="AddValidCultureNames" TaskFactory="CodeTaskFactory" AssemblyFile="$(RoslynCodeTaskFactory)" Condition=" '$(RoslynCodeTaskFactory)' != '' ">
     <ParameterGroup>
       <Language ParameterType="System.String" Required="true" />
     </ParameterGroup>
