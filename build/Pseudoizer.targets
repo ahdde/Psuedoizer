@@ -3,7 +3,7 @@
     <PseudoLanguage Condition=" '$(PseudoLanguage)' == '' ">qps-ploc</PseudoLanguage>
     <AssignTargetPathsDependsOn>$(AssignTargetPathsDependsOn);AddPlocLanguages</AssignTargetPathsDependsOn>
   </PropertyGroup>
-  <UsingTask TaskName="AddValidCultureNames" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll" >
+  <UsingTask TaskName="AddValidCultureNames" TaskFactory="CodeTaskFactory" AssemblyFile="$(RoslynCodeTaskFactory)" Condition=" '$(RoslynCodeTaskFactory)' != '' ">
     <ParameterGroup>
       <Language ParameterType="System.String" Required="true" />
     </ParameterGroup>
@@ -14,7 +14,7 @@
       <Using Namespace="System.Reflection"/>
       <Code Type="Fragment" Language="cs">
         <![CDATA[
-            var assembly = typeof(Microsoft.Build.Tasks.AspNetCompiler).Assembly;
+            var assembly = typeof(Microsoft.Build.Tasks.CreateItem).Assembly;
             var type = assembly.GetType("Microsoft.Build.Tasks.CultureInfoCache");
             var field = type.GetField("ValidCultureNames", BindingFlags.NonPublic | BindingFlags.Static);
             var validCultureNames = (HashSet<string>) field.GetValue(type);
